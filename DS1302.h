@@ -58,14 +58,6 @@ typedef uint8_t reg_t;
 class Time
 {
 public:
-  uint8_t sec;
-  uint8_t min;
-  uint8_t hr;
-  uint8_t date;
-  uint8_t mon;
-  uint8_t day;
-  uint16_t yr;
-
   /**
    * Default constructor.
    *
@@ -89,6 +81,14 @@ public:
   Time(uint16_t yr, uint8_t mon, uint8_t date,
        uint8_t hr, uint8_t min, uint8_t sec,
        uint8_t day);
+
+  uint8_t sec;
+  uint8_t min;
+  uint8_t hr;
+  uint8_t date;
+  uint8_t mon;
+  uint8_t day;
+  uint16_t yr;
 };
 
 
