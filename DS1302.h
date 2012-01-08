@@ -25,8 +25,8 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 */
-#ifndef DS1302_h
-#define DS1302_h
+#ifndef DS1302_H_
+#define DS1302_H_
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -234,4 +234,4 @@ private:
   void _register_dec_to_bcd(reg_t reg, uint8_t value);
 };
 
-#endif
+#endif  // DS1302_H_
