@@ -35,7 +35,7 @@ SUCH DAMAGE.
 #endif
 
 /**
- * Convenience register constants
+ * Convenience register constants.
  */
 #define SEC_REG  0
 #define MIN_REG  1
@@ -47,7 +47,7 @@ SUCH DAMAGE.
 #define WP_REG   7
 
 /**
- * Type for a register number
+ * Type for a register number.
  */
 typedef uint8_t reg_t;
 
