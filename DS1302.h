@@ -7,19 +7,6 @@
 #ifndef DS1302_H_
 #define DS1302_H_
 
-// Convenience register constants.
-#define SEC_REG  0
-#define MIN_REG  1
-#define HR_REG   2
-#define DATE_REG 3
-#define MON_REG  4
-#define DAY_REG  5
-#define YR_REG   6
-#define WP_REG   7
-
-// Type for a register number.
-typedef uint8_t reg_t;
-
 // Class representing a particular time and date.
 class Time {
  public:
@@ -64,6 +51,17 @@ class Time {
 // Talks to a Dallas Semiconductor DS1302 Real Time Clock (RTC) chip.
 class DS1302 {
  public:
+  enum Register {
+    kSecondReg       = 0,
+    kMinuteReg       = 1,
+    kHourReg         = 2,
+    kDateReg         = 3,
+    kMonthReg        = 4,
+    kDayReg          = 5,
+    kYearReg         = 6,
+    kWriteProtectReg = 7
+  };
+
   // Prepares to interface with the chip on the given I/O pins.
   //
   // Args:
@@ -79,14 +77,14 @@ class DS1302 {
   //
   // Returns:
   //   register value
-  uint8_t readRegister(reg_t reg);
+  uint8_t readRegister(Register reg);
 
   // Writes byte into register.
   //
   // Args:
   //   reg: register number
   //   value: byte to write
-  void writeRegister(reg_t reg, uint8_t value);
+  void writeRegister(Register reg, uint8_t value);
 
   // Enables or disables write protection on chip.
   //
@@ -161,8 +159,8 @@ private:
   //
   // Returns:
   //   decimal value
-  uint8_t registerBcdToDec(reg_t reg, uint8_t high_bit);
-  uint8_t registerBcdToDec(reg_t reg);
+  uint8_t registerBcdToDec(Register reg, uint8_t high_bit);
+  uint8_t registerBcdToDec(Register reg);
 
   // Sets a register with binary-coded decimal converted from a given value.
   //
@@ -170,8 +168,8 @@ private:
   //   reg: register number
   //   value: decimal value to convert to BCD
   //   high_bit: highest bit in the register allowed to contain BCD value
-  void registerDecToBcd(reg_t reg, uint8_t value, uint8_t high_bit);
-  void registerDecToBcd(reg_t reg, uint8_t value);
+  void registerDecToBcd(Register reg, uint8_t value, uint8_t high_bit);
+  void registerDecToBcd(Register reg, uint8_t value);
 };
 
 #endif  // DS1302_H_

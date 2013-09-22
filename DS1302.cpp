@@ -54,7 +54,7 @@ uint8_t DS1302::readIn() {
   return input_value;
 }
 
-uint8_t DS1302::registerBcdToDec(const reg_t reg, const uint8_t high_bit) {
+uint8_t DS1302::registerBcdToDec(const Register reg, const uint8_t high_bit) {
   const uint8_t mask = (1 << (high_bit + 1)) - 1;
   uint8_t val = readRegister(reg);
   val &= mask;
@@ -62,12 +62,12 @@ uint8_t DS1302::registerBcdToDec(const reg_t reg, const uint8_t high_bit) {
   return val;
 }
 
-uint8_t DS1302::registerBcdToDec(const reg_t reg) {
+uint8_t DS1302::registerBcdToDec(const Register reg) {
   return registerBcdToDec(reg, 7);
 }
 
-void DS1302::registerDecToBcd(const reg_t reg, uint8_t value,
-                                  const uint8_t high_bit) {
+void DS1302::registerDecToBcd(const Register reg, uint8_t value,
+                              const uint8_t high_bit) {
   const uint8_t mask = (1 << (high_bit + 1)) - 1;
   uint8_t regv = readRegister(reg);
 
@@ -83,11 +83,11 @@ void DS1302::registerDecToBcd(const reg_t reg, uint8_t value,
   writeRegister(reg, value);
 }
 
-void DS1302::registerDecToBcd(const reg_t reg, const uint8_t value) {
+void DS1302::registerDecToBcd(const Register reg, const uint8_t value) {
   registerDecToBcd(reg, value, 7);
 }
 
-uint8_t DS1302::readRegister(const reg_t reg) {
+uint8_t DS1302::readRegister(const Register reg) {
   uint8_t cmd_byte = 129;  // 1000 0001
   uint8_t reg_value;
   cmd_byte |= (reg << 1);
@@ -103,7 +103,7 @@ uint8_t DS1302::readRegister(const reg_t reg) {
   return reg_value;
 }
 
-void DS1302::writeRegister(const reg_t reg, const uint8_t value) {
+void DS1302::writeRegister(const Register reg, const uint8_t value) {
   uint8_t cmd_byte = (128 | (reg << 1));
 
   digitalWrite(sclk_pin_, LOW);
@@ -116,26 +116,26 @@ void DS1302::writeRegister(const reg_t reg, const uint8_t value) {
 }
 
 void DS1302::writeProtect(const bool enable) {
-  writeRegister(WP_REG, (enable << 7));
+  writeRegister(kWriteProtectReg, (enable << 7));
 }
 
 void DS1302::halt(const bool enable) {
-  uint8_t sec = readRegister(SEC_REG);
+  uint8_t sec = readRegister(kSecondReg);
   sec &= ~(1 << 7);
   sec |= (enable << 7);
-  writeRegister(SEC_REG, sec);
+  writeRegister(kSecondReg, sec);
 }
 
 uint8_t DS1302::seconds() {
-  return registerBcdToDec(SEC_REG, 6);
+  return registerBcdToDec(kSecondReg, 6);
 }
 
 uint8_t DS1302::minutes() {
-  return registerBcdToDec(MIN_REG);
+  return registerBcdToDec(kMinuteReg);
 }
 
 uint8_t DS1302::hour() {
-  uint8_t hr = readRegister(HR_REG);
+  uint8_t hr = readRegister(kHourReg);
   uint8_t adj;
   if (hr & 128)  // 12-hour mode
     adj = 12 * ((hr & 32) >> 5);
@@ -146,19 +146,19 @@ uint8_t DS1302::hour() {
 }
 
 uint8_t DS1302::date() {
-  return registerBcdToDec(DATE_REG, 5);
+  return registerBcdToDec(kDateReg, 5);
 }
 
 uint8_t DS1302::month() {
-  return registerBcdToDec(MON_REG, 4);
+  return registerBcdToDec(kMonthReg, 4);
 }
 
 Time::Day DS1302::day() {
-  return static_cast<Time::Day>(registerBcdToDec(DAY_REG, 2));
+  return static_cast<Time::Day>(registerBcdToDec(kDayReg, 2));
 }
 
 uint16_t DS1302::year() {
-  return 2000 + registerBcdToDec(YR_REG);
+  return 2000 + registerBcdToDec(kYearReg);
 }
 
 Time DS1302::time() {
@@ -174,33 +174,33 @@ Time DS1302::time() {
 }
 
 void DS1302::seconds(const uint8_t sec) {
-  registerDecToBcd(SEC_REG, sec, 6);
+  registerDecToBcd(kSecondReg, sec, 6);
 }
 
 void DS1302::minutes(const uint8_t min) {
-  registerDecToBcd(MIN_REG, min, 6);
+  registerDecToBcd(kMinuteReg, min, 6);
 }
 
 void DS1302::hour(const uint8_t hr) {
-  writeRegister(HR_REG, 0);  // set 24-hour mode
-  registerDecToBcd(HR_REG, hr, 5);
+  writeRegister(kHourReg, 0);  // set 24-hour mode
+  registerDecToBcd(kHourReg, hr, 5);
 }
 
 void DS1302::date(const uint8_t date) {
-  registerDecToBcd(DATE_REG, date, 5);
+  registerDecToBcd(kDateReg, date, 5);
 }
 
 void DS1302::month(const uint8_t mon) {
-  registerDecToBcd(MON_REG, mon, 4);
+  registerDecToBcd(kMonthReg, mon, 4);
 }
 
 void DS1302::day(const Time::Day day) {
-  registerDecToBcd(DAY_REG, static_cast<int>(day), 2);
+  registerDecToBcd(kDayReg, static_cast<int>(day), 2);
 }
 
 void DS1302::year(uint16_t yr) {
   yr -= 2000;
-  registerDecToBcd(YR_REG, yr);
+  registerDecToBcd(kYearReg, yr);
 }
 
 void DS1302::time(const Time t) {
