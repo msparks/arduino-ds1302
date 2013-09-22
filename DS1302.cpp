@@ -17,10 +17,6 @@ Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
   this->day  = day;
 }
 
-Time::Time() {
-  Time(2000, 1, 1, 0, 0, 0, kSaturday);
-}
-
 
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
                const uint8_t sclk_pin) {
@@ -162,15 +158,9 @@ uint16_t DS1302::year() {
 }
 
 Time DS1302::time() {
-  Time t;
-  t.sec  = seconds();
-  t.min  = minutes();
-  t.hr   = hour();
-  t.date = date();
-  t.mon  = month();
-  t.day  = day();
-  t.yr   = year();
-  return t;
+  return Time(year(), month(), date(),
+              hour(), minutes(), seconds(),
+              day());
 }
 
 void DS1302::seconds(const uint8_t sec) {

@@ -7,17 +7,19 @@
 #include <stdio.h>
 #include <DS1302.h>
 
+namespace {
+
 // Set the appropriate digital I/O pin connections. These are the pin
 // assignments for the Arduino as well for as the DS1302 chip. See the DS1302
 // datasheet:
 //
 //  http://datasheets.maximintegrated.com/en/ds/DS1302.pdf
-static const int kCePin   = 5;  // Chip Enable
-static const int kIoPin   = 6;  // Input/Output
-static const int kSclkPin = 7;  // Serial Clock
+const int kCePin   = 5;  // Chip Enable
+const int kIoPin   = 6;  // Input/Output
+const int kSclkPin = 7;  // Serial Clock
 
 // Create a DS1302 object.
-static DS1302 rtc(kCePin, kIoPin, kSclkPin);
+DS1302 rtc(kCePin, kIoPin, kSclkPin);
 
 String dayAsString(const Time::Day day) {
   switch (day) {
@@ -32,7 +34,7 @@ String dayAsString(const Time::Day day) {
   return "(unknown day)";
 }
 
-void print_time() {
+void printTime() {
   // Get the current time and date from the chip.
   Time t = rtc.time();
 
@@ -49,6 +51,8 @@ void print_time() {
   // Print the formatted string to serial so we can see the time.
   Serial.println(buf);
 }
+
+}  // namespace
 
 void setup() {
   Serial.begin(9600);
@@ -69,6 +73,6 @@ void setup() {
 
 // Loop and print the time every second.
 void loop() {
-  print_time();
+  printTime();
   delay(1000);
 }

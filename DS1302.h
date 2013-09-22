@@ -20,10 +20,6 @@ class Time {
     kSaturday  = 7
   };
 
-  // Creates a time object dated to Saturday Jan 1, 2000 at 00:00:00.
-  // The date and time can be changed by editing the instance variables.
-  Time();
-
   // Creates a Time object with a given time.
   //
   // Args:
@@ -107,7 +103,7 @@ class DS1302 {
   Time::Day day();
   uint16_t year();
 
-  // Get the current time and date in a Time object.
+  // Returns the current time and date in a Time object.
   //
   // Returns:
   //   Current time as Time object.
