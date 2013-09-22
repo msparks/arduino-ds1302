@@ -13,7 +13,7 @@ namespace {
 // assignments for the Arduino as well for as the DS1302 chip. See the DS1302
 // datasheet:
 //
-//  http://datasheets.maximintegrated.com/en/ds/DS1302.pdf
+//   http://datasheets.maximintegrated.com/en/ds/DS1302.pdf
 const int kCePin   = 5;  // Chip Enable
 const int kIoPin   = 6;  // Input/Output
 const int kSclkPin = 7;  // Serial Clock
