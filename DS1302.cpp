@@ -70,12 +70,12 @@ void DS1302::_register_dec_to_bcd(reg_t reg, uint8_t value, uint8_t high_bit) {
   uint8_t regv = read_register(reg);
   uint8_t mask = (1 << (high_bit + 1)) - 1;
 
-  /* convert value to bcd in place */
+  // Convert value to bcd in place.
   uint8_t tvalue = value / 10;
   value = value % 10;
   value |= (tvalue << 4);
 
-  /* replace high bits of value if needed */
+  // Replace high bits of value if needed.
   value &= mask;
   value |= (regv &= ~mask);
 
@@ -87,7 +87,7 @@ void DS1302::_register_dec_to_bcd(reg_t reg, uint8_t value) {
 }
 
 uint8_t DS1302::read_register(reg_t reg) {
-  uint8_t cmd_byte = 129;  /* 1000 0001 */
+  uint8_t cmd_byte = 129;  // 1000 0001
   uint8_t reg_value;
   cmd_byte |= (reg << 1);
 
@@ -136,9 +136,9 @@ uint8_t DS1302::minutes() {
 uint8_t DS1302::hour() {
   uint8_t hr = read_register(HR_REG);
   uint8_t adj;
-  if (hr & 128)  /* 12-hour mode */
+  if (hr & 128)  // 12-hour mode
     adj = 12 * ((hr & 32) >> 5);
-  else           /* 24-hour mode */
+  else           // 24-hour mode
     adj = 10 * ((hr & (32 + 16)) >> 4);
   hr = (hr & 15) + adj;
   return hr;
@@ -181,7 +181,7 @@ void DS1302::minutes(uint8_t min) {
 }
 
 void DS1302::hour(uint8_t hr) {
-  write_register(HR_REG, 0);  /* set 24-hour mode */
+  write_register(HR_REG, 0);  // set 24-hour mode
   _register_dec_to_bcd(HR_REG, hr, 5);
 }
 
