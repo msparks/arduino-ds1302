@@ -20,8 +20,7 @@ char day[10];
 // Create a DS1302 object.
 DS1302 rtc(CE_PIN, IO_PIN, SCLK_PIN);
 
-void print_time()
-{
+void print_time() {
   // Get the current time and date from the chip.
   Time t = rtc.time();
 
@@ -61,8 +60,7 @@ void print_time()
   Serial.println(buf);
 }
 
-void setup()
-{
+void setup() {
   Serial.begin(9600);
 
   // Initialize a new chip by turning off write protection and clearing the
@@ -80,8 +78,7 @@ void setup()
 }
 
 // Loop and print the time every second.
-void loop()
-{
+void loop() {
   print_time();
   delay(1000);
 }
