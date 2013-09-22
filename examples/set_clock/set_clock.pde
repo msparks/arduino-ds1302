@@ -56,7 +56,7 @@ void setup() {
   // Initialize a new chip by turning off write protection and clearing the
   // clock halt flag. These methods needn't always be called. See the DS1302
   // datasheet for details.
-  rtc.write_protect(false);
+  rtc.writeProtect(false);
   rtc.halt(false);
 
   // Make a new time object to set the date and time.

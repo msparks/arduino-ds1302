@@ -79,20 +79,20 @@ class DS1302 {
   //
   // Returns:
   //   register value
-  uint8_t read_register(reg_t reg);
+  uint8_t readRegister(reg_t reg);
 
   // Writes byte into register.
   //
   // Args:
   //   reg: register number
   //   value: byte to write
-  void write_register(reg_t reg, uint8_t value);
+  void writeRegister(reg_t reg, uint8_t value);
 
   // Enables or disables write protection on chip.
   //
   // Args:
   //   enable: true to enable, false to disable.
-  void write_protect(bool enable);
+  void writeProtect(bool enable);
 
   // Set or clear clock halt flag.
   //
@@ -133,25 +133,25 @@ class DS1302 {
   void time(Time t);
 
 private:
-  uint8_t _ce_pin;
-  uint8_t _io_pin;
-  uint8_t _sclk_pin;
+  uint8_t ce_pin_;
+  uint8_t io_pin_;
+  uint8_t sclk_pin_;
 
   // Shifts out a value to the IO pin.
   //
-  // Side effects: sets _io_pin as OUTPUT.
+  // Side effects: sets io_pin_ as OUTPUT.
   //
   // Args:
   //   value: byte to shift out
-  void _write_out(uint8_t value);
+  void writeOut(uint8_t value);
 
   // Reads in a byte from the IO pin.
   //
-  // Side effects: sets _io_pin to INPUT.
+  // Side effects: sets io_pin_ to INPUT.
   //
   // Returns:
   //   byte read in
-  uint8_t _read_in();
+  uint8_t readIn();
 
   // Gets a binary-coded decimal register and returns it in decimal.
   //
@@ -161,8 +161,8 @@ private:
   //
   // Returns:
   //   decimal value
-  uint8_t _register_bcd_to_dec(reg_t reg, uint8_t high_bit);
-  uint8_t _register_bcd_to_dec(reg_t reg);
+  uint8_t registerBcdToDec(reg_t reg, uint8_t high_bit);
+  uint8_t registerBcdToDec(reg_t reg);
 
   // Sets a register with binary-coded decimal converted from a given value.
   //
@@ -170,8 +170,8 @@ private:
   //   reg: register number
   //   value: decimal value to convert to BCD
   //   high_bit: highest bit in the register allowed to contain BCD value
-  void _register_dec_to_bcd(reg_t reg, uint8_t value, uint8_t high_bit);
-  void _register_dec_to_bcd(reg_t reg, uint8_t value);
+  void registerDecToBcd(reg_t reg, uint8_t value, uint8_t high_bit);
+  void registerDecToBcd(reg_t reg, uint8_t value);
 };
 
 #endif  // DS1302_H_

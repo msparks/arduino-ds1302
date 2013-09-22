@@ -24,52 +24,52 @@ Time::Time() {
 
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
                const uint8_t sclk_pin) {
-  _ce_pin = ce_pin;
-  _io_pin = io_pin;
-  _sclk_pin = sclk_pin;
+  ce_pin_ = ce_pin;
+  io_pin_ = io_pin;
+  sclk_pin_ = sclk_pin;
 
   pinMode(ce_pin, OUTPUT);
   pinMode(sclk_pin, OUTPUT);
 }
 
-void DS1302::_write_out(const uint8_t value) {
-  pinMode(_io_pin, OUTPUT);
-  shiftOut(_io_pin, _sclk_pin, LSBFIRST, value);
+void DS1302::writeOut(const uint8_t value) {
+  pinMode(io_pin_, OUTPUT);
+  shiftOut(io_pin_, sclk_pin_, LSBFIRST, value);
 }
 
-uint8_t DS1302::_read_in() {
+uint8_t DS1302::readIn() {
   uint8_t input_value = 0;
   uint8_t bit = 0;
-  pinMode(_io_pin, INPUT);
+  pinMode(io_pin_, INPUT);
 
   for (int i = 0; i < 8; ++i) {
-    bit = digitalRead(_io_pin);
+    bit = digitalRead(io_pin_);
     input_value |= (bit << i);
 
-    digitalWrite(_sclk_pin, HIGH);
+    digitalWrite(sclk_pin_, HIGH);
     delayMicroseconds(1);
-    digitalWrite(_sclk_pin, LOW);
+    digitalWrite(sclk_pin_, LOW);
   }
 
   return input_value;
 }
 
-uint8_t DS1302::_register_bcd_to_dec(const reg_t reg, const uint8_t high_bit) {
+uint8_t DS1302::registerBcdToDec(const reg_t reg, const uint8_t high_bit) {
   const uint8_t mask = (1 << (high_bit + 1)) - 1;
-  uint8_t val = read_register(reg);
+  uint8_t val = readRegister(reg);
   val &= mask;
   val = (val & 15) + 10 * ((val & (15 << 4)) >> 4);
   return val;
 }
 
-uint8_t DS1302::_register_bcd_to_dec(const reg_t reg) {
-  return _register_bcd_to_dec(reg, 7);
+uint8_t DS1302::registerBcdToDec(const reg_t reg) {
+  return registerBcdToDec(reg, 7);
 }
 
-void DS1302::_register_dec_to_bcd(const reg_t reg, uint8_t value,
+void DS1302::registerDecToBcd(const reg_t reg, uint8_t value,
                                   const uint8_t high_bit) {
   const uint8_t mask = (1 << (high_bit + 1)) - 1;
-  uint8_t regv = read_register(reg);
+  uint8_t regv = readRegister(reg);
 
   // Convert value to bcd in place.
   uint8_t tvalue = value / 10;
@@ -80,62 +80,62 @@ void DS1302::_register_dec_to_bcd(const reg_t reg, uint8_t value,
   value &= mask;
   value |= (regv &= ~mask);
 
-  write_register(reg, value);
+  writeRegister(reg, value);
 }
 
-void DS1302::_register_dec_to_bcd(const reg_t reg, const uint8_t value) {
-  _register_dec_to_bcd(reg, value, 7);
+void DS1302::registerDecToBcd(const reg_t reg, const uint8_t value) {
+  registerDecToBcd(reg, value, 7);
 }
 
-uint8_t DS1302::read_register(const reg_t reg) {
+uint8_t DS1302::readRegister(const reg_t reg) {
   uint8_t cmd_byte = 129;  // 1000 0001
   uint8_t reg_value;
   cmd_byte |= (reg << 1);
 
-  digitalWrite(_sclk_pin, LOW);
-  digitalWrite(_ce_pin, HIGH);
+  digitalWrite(sclk_pin_, LOW);
+  digitalWrite(ce_pin_, HIGH);
 
-  _write_out(cmd_byte);
-  reg_value = _read_in();
+  writeOut(cmd_byte);
+  reg_value = readIn();
 
-  digitalWrite(_ce_pin, LOW);
+  digitalWrite(ce_pin_, LOW);
 
   return reg_value;
 }
 
-void DS1302::write_register(const reg_t reg, const uint8_t value) {
+void DS1302::writeRegister(const reg_t reg, const uint8_t value) {
   uint8_t cmd_byte = (128 | (reg << 1));
 
-  digitalWrite(_sclk_pin, LOW);
-  digitalWrite(_ce_pin, HIGH);
+  digitalWrite(sclk_pin_, LOW);
+  digitalWrite(ce_pin_, HIGH);
 
-  _write_out(cmd_byte);
-  _write_out(value);
+  writeOut(cmd_byte);
+  writeOut(value);
 
-  digitalWrite(_ce_pin, LOW);
+  digitalWrite(ce_pin_, LOW);
 }
 
-void DS1302::write_protect(const bool enable) {
-  write_register(WP_REG, (enable << 7));
+void DS1302::writeProtect(const bool enable) {
+  writeRegister(WP_REG, (enable << 7));
 }
 
 void DS1302::halt(const bool enable) {
-  uint8_t sec = read_register(SEC_REG);
+  uint8_t sec = readRegister(SEC_REG);
   sec &= ~(1 << 7);
   sec |= (enable << 7);
-  write_register(SEC_REG, sec);
+  writeRegister(SEC_REG, sec);
 }
 
 uint8_t DS1302::seconds() {
-  return _register_bcd_to_dec(SEC_REG, 6);
+  return registerBcdToDec(SEC_REG, 6);
 }
 
 uint8_t DS1302::minutes() {
-  return _register_bcd_to_dec(MIN_REG);
+  return registerBcdToDec(MIN_REG);
 }
 
 uint8_t DS1302::hour() {
-  uint8_t hr = read_register(HR_REG);
+  uint8_t hr = readRegister(HR_REG);
   uint8_t adj;
   if (hr & 128)  // 12-hour mode
     adj = 12 * ((hr & 32) >> 5);
@@ -146,19 +146,19 @@ uint8_t DS1302::hour() {
 }
 
 uint8_t DS1302::date() {
-  return _register_bcd_to_dec(DATE_REG, 5);
+  return registerBcdToDec(DATE_REG, 5);
 }
 
 uint8_t DS1302::month() {
-  return _register_bcd_to_dec(MON_REG, 4);
+  return registerBcdToDec(MON_REG, 4);
 }
 
 Time::Day DS1302::day() {
-  return static_cast<Time::Day>(_register_bcd_to_dec(DAY_REG, 2));
+  return static_cast<Time::Day>(registerBcdToDec(DAY_REG, 2));
 }
 
 uint16_t DS1302::year() {
-  return 2000 + _register_bcd_to_dec(YR_REG);
+  return 2000 + registerBcdToDec(YR_REG);
 }
 
 Time DS1302::time() {
@@ -174,33 +174,33 @@ Time DS1302::time() {
 }
 
 void DS1302::seconds(const uint8_t sec) {
-  _register_dec_to_bcd(SEC_REG, sec, 6);
+  registerDecToBcd(SEC_REG, sec, 6);
 }
 
 void DS1302::minutes(const uint8_t min) {
-  _register_dec_to_bcd(MIN_REG, min, 6);
+  registerDecToBcd(MIN_REG, min, 6);
 }
 
 void DS1302::hour(const uint8_t hr) {
-  write_register(HR_REG, 0);  // set 24-hour mode
-  _register_dec_to_bcd(HR_REG, hr, 5);
+  writeRegister(HR_REG, 0);  // set 24-hour mode
+  registerDecToBcd(HR_REG, hr, 5);
 }
 
 void DS1302::date(const uint8_t date) {
-  _register_dec_to_bcd(DATE_REG, date, 5);
+  registerDecToBcd(DATE_REG, date, 5);
 }
 
 void DS1302::month(const uint8_t mon) {
-  _register_dec_to_bcd(MON_REG, mon, 4);
+  registerDecToBcd(MON_REG, mon, 4);
 }
 
 void DS1302::day(const Time::Day day) {
-  _register_dec_to_bcd(DAY_REG, static_cast<int>(day), 2);
+  registerDecToBcd(DAY_REG, static_cast<int>(day), 2);
 }
 
 void DS1302::year(uint16_t yr) {
   yr -= 2000;
-  _register_dec_to_bcd(YR_REG, yr);
+  registerDecToBcd(YR_REG, yr);
 }
 
 void DS1302::time(const Time t) {
