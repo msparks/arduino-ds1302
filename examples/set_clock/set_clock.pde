@@ -8,17 +8,21 @@
 #include <string.h>
 #include <DS1302.h>
 
-// Set the appropriate digital I/O pin connections.
-uint8_t CE_PIN   = 5;
-uint8_t IO_PIN   = 6;
-uint8_t SCLK_PIN = 7;
+// Set the appropriate digital I/O pin connections. These are the pin
+// assignments for the Arduino as well for as the DS1302 chip. See the DS1302
+// datasheet:
+//
+//  http://datasheets.maximintegrated.com/en/ds/DS1302.pdf
+static const int kCePin   = 5;  // Chip Enable
+static const int kIoPin   = 6;  // Input/Output
+static const int kSclkPin = 7;  // Serial Clock
 
 // Create buffers.
 char buf[50];
 char day[10];
 
 // Create a DS1302 object.
-DS1302 rtc(CE_PIN, IO_PIN, SCLK_PIN);
+DS1302 rtc(kCePin, kIoPin, kSclkPin);
 
 void print_time() {
   // Get the current time and date from the chip.
