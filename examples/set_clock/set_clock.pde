@@ -75,9 +75,9 @@ void setup()
   rtc.write_protect(false);
   rtc.halt(false);
 
-  /* Make a new time object to set the date and time */
-  /*   Tuesday, May 19, 2009 at 21:16:37.            */
-  Time t(2009, 5, 19, 21, 16, 37, 3);
+  // Make a new time object to set the date and time.
+  // Sunday, September 22, 2013 at 01:38:50.
+  Time t(2013, 9, 22, 1, 38, 50, 1);
 
   /* Set the time and date on the chip */
   rtc.time(t);
