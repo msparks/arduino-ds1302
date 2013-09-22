@@ -23,6 +23,16 @@ typedef uint8_t reg_t;
 // Class representing a particular time and date.
 class Time {
  public:
+  enum Day {
+    kSunday    = 1,
+    kMonday    = 2,
+    kTuesday   = 3,
+    kWednesday = 4,
+    kThursday  = 5,
+    kFriday    = 6,
+    kSaturday  = 7
+  };
+
   // Creates a time object dated to Saturday Jan 1, 2000 at 00:00:00.
   // The date and time can be changed by editing the instance variables.
   Time();
@@ -39,14 +49,14 @@ class Time {
   //   day: day of the week. Sunday is 1. Range: {1, ..., 7}.
   Time(uint16_t yr, uint8_t mon, uint8_t date,
        uint8_t hr, uint8_t min, uint8_t sec,
-       uint8_t day);
+       Day day);
 
   uint8_t sec;
   uint8_t min;
   uint8_t hr;
   uint8_t date;
   uint8_t mon;
-  uint8_t day;
+  Day day;
   uint16_t yr;
 };
 
@@ -96,7 +106,7 @@ class DS1302 {
   uint8_t hour();
   uint8_t date();
   uint8_t month();
-  uint8_t day();
+  Time::Day day();
   uint16_t year();
 
   // Get the current time and date in a Time object.
@@ -113,7 +123,7 @@ class DS1302 {
   void hour(uint8_t hr);
   void date(uint8_t date);
   void month(uint8_t mon);
-  void day(uint8_t day);
+  void day(Time::Day day);
   void year(uint16_t yr);
 
   // Sets the time and date to the instant specified in a given Time object.

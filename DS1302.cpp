@@ -7,7 +7,7 @@
 
 Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
            const uint8_t hr, const uint8_t min, const uint8_t sec,
-           const uint8_t day) {
+           const Day day) {
   this->yr   = yr;
   this->mon  = mon;
   this->date = date;
@@ -18,7 +18,7 @@ Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
 }
 
 Time::Time() {
-  Time(2000, 1, 1, 0, 0, 0, 7);
+  Time(2000, 1, 1, 0, 0, 0, kSaturday);
 }
 
 
@@ -153,8 +153,8 @@ uint8_t DS1302::month() {
   return _register_bcd_to_dec(MON_REG, 4);
 }
 
-uint8_t DS1302::day() {
-  return _register_bcd_to_dec(DAY_REG, 2);
+Time::Day DS1302::day() {
+  return static_cast<Time::Day>(_register_bcd_to_dec(DAY_REG, 2));
 }
 
 uint16_t DS1302::year() {
@@ -194,8 +194,8 @@ void DS1302::month(const uint8_t mon) {
   _register_dec_to_bcd(MON_REG, mon, 4);
 }
 
-void DS1302::day(const uint8_t day) {
-  _register_dec_to_bcd(DAY_REG, day, 2);
+void DS1302::day(const Time::Day day) {
+  _register_dec_to_bcd(DAY_REG, static_cast<int>(day), 2);
 }
 
 void DS1302::year(uint16_t yr) {
