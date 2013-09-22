@@ -5,7 +5,6 @@
 #endif
 #include "DS1302.h"
 
-
 Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
            const uint8_t hr, const uint8_t min, const uint8_t sec,
            const uint8_t day) {
