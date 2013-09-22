@@ -5,7 +5,6 @@
 //
 // http://quadpoint.org/projects/arduino-ds1302
 #include <stdio.h>
-#include <string.h>
 #include <DS1302.h>
 
 // Set the appropriate digital I/O pin connections. These are the pin
@@ -17,46 +16,33 @@ static const int kCePin   = 5;  // Chip Enable
 static const int kIoPin   = 6;  // Input/Output
 static const int kSclkPin = 7;  // Serial Clock
 
-// Create buffers.
-char buf[50];
-char day[10];
-
 // Create a DS1302 object.
-DS1302 rtc(kCePin, kIoPin, kSclkPin);
+static DS1302 rtc(kCePin, kIoPin, kSclkPin);
+
+String dayAsString(const Time::Day day) {
+  switch (day) {
+    case Time::kSunday: return "Sunday";
+    case Time::kMonday: return "Monday";
+    case Time::kTuesday: return "Tuesday";
+    case Time::kWednesday: return "Wednesday";
+    case Time::kThursday: return "Thursday";
+    case Time::kFriday: return "Friday";
+    case Time::kSaturday: return "Saturday";
+  }
+  return "(unknown day)";
+}
 
 void print_time() {
   // Get the current time and date from the chip.
   Time t = rtc.time();
 
   // Name the day of the week.
-  memset(day, 0, sizeof(day));  // clear day buffer
-  switch (t.day) {
-    case 1:
-      strcpy(day, "Sunday");
-      break;
-    case 2:
-      strcpy(day, "Monday");
-      break;
-    case 3:
-      strcpy(day, "Tuesday");
-      break;
-    case 4:
-      strcpy(day, "Wednesday");
-      break;
-    case 5:
-      strcpy(day, "Thursday");
-      break;
-    case 6:
-      strcpy(day, "Friday");
-      break;
-    case 7:
-      strcpy(day, "Saturday");
-      break;
-  }
+  const String day = dayAsString(t.day);
 
   // Format the time and date and insert into the temporary buffer.
+  char buf[50];
   snprintf(buf, sizeof(buf), "%s %04d-%02d-%02d %02d:%02d:%02d",
-           day,
+           day.c_str(),
            t.yr, t.mon, t.date,
            t.hr, t.min, t.sec);
 
