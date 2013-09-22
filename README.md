@@ -16,4 +16,4 @@ In that case, you should put the `DS1302` directory at:
 
     /Users/you/Documents/Arduino/libraries/DS1302
 
-A simple example is included with the code.
+A simple example, [set_clock](examples/set_clock), is included.
