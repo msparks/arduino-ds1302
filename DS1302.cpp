@@ -9,9 +9,6 @@
 
 namespace {
 
-// The RAM register space follows the clock register space.
-const uint8_t kRamRegisterOffset = 32;
-
 enum Register {
   kSecondReg       = 0,
   kMinuteReg       = 1,
@@ -20,7 +17,10 @@ enum Register {
   kMonthReg        = 4,
   kDayReg          = 5,
   kYearReg         = 6,
-  kWriteProtectReg = 7
+  kWriteProtectReg = 7,
+
+  // The RAM register space follows the clock register space.
+  kRamAddress0     = 32
 };
 
 enum Command {
@@ -194,7 +194,7 @@ void DS1302::writeRam(const uint8_t address, const uint8_t value) {
     return;
   }
 
-  writeRegister(kRamRegisterOffset + address, value);
+  writeRegister(kRamAddress0 + address, value);
 }
 
 uint8_t DS1302::readRam(const uint8_t address) {
@@ -203,7 +203,7 @@ uint8_t DS1302::readRam(const uint8_t address) {
     return 0;
   }
 
-  return readRegister(kRamRegisterOffset + address);
+  return readRegister(kRamAddress0 + address);
 }
 
 void DS1302::writeRamBulk(const uint8_t* const data, int len) {
