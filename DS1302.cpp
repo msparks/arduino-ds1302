@@ -9,6 +9,9 @@
 
 namespace {
 
+// The RAM register space follows the clock register space.
+const uint8_t kRamRegisterOffset = 32;
+
 enum Register {
   kSecondReg       = 0,
   kMinuteReg       = 1,
@@ -168,4 +171,22 @@ void DS1302::time(const Time t) {
   writeOut(0);  // Write protection register.
 
   digitalWrite(ce_pin_, LOW);
+}
+
+void DS1302::writeRam(const uint8_t address, const uint8_t value) {
+  // Only RAM addresses in [0, 30] are valid.
+  if (address > 30) {
+    return;
+  }
+
+  writeRegister(kRamRegisterOffset + address, value);
+}
+
+uint8_t DS1302::readRam(const uint8_t address) {
+  // Only RAM addresses in [0, 30] are valid.
+  if (address > 30) {
+    return 0;
+  }
+
+  return readRegister(kRamRegisterOffset + address);
 }

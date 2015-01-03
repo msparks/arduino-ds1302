@@ -74,7 +74,7 @@ class DS1302 {
   //   enable: true to enable write protection.
   void writeProtect(bool enable);
 
-  // Set or clear Clock Halt flag on the chip.
+  // Sets or clears Clock Halt flag on the chip.
   //
   // Enabling the Clock Halt flag disables the DS1302's clock oscillator and
   // places it into a low-power standby mode. While in this mode, the time does
@@ -104,6 +104,29 @@ class DS1302 {
   // Args:
   //   t: Time instant.
   void time(Time t);
+
+  // Writes a byte to RAM.
+  //
+  // The DS1302 has 31 bytes of static RAM that can store arbitrary data as long
+  // as the device has power.
+  //
+  // Writes to invalid addresses have no effect.
+  //
+  // Args:
+  //   address: RAM address in [0, 30].
+  //   value: Byte to write to the RAM address.
+  void writeRam(uint8_t address, uint8_t value);
+
+  // Reads a byte from RAM.
+  //
+  // Reads of invalid addresses return 0.
+  //
+  // Args:
+  //   address: RAM address in [0, 30].
+  //
+  // Returns:
+  //   Byte from RAM or 0 if the address is invalid.
+  uint8_t readRam(uint8_t address);
 
   // Reads register byte value.
   //
