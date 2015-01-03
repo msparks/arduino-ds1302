@@ -150,15 +150,6 @@ private:
   // Returns:
   //   byte read in
   uint8_t readIn();
-
-  // Sets a register with binary-coded decimal converted from a given value.
-  //
-  // Args:
-  //   reg: register number
-  //   value: decimal value to convert to BCD
-  //   high_bit: highest bit in the register allowed to contain BCD value
-  void registerDecToBcd(Register reg, uint8_t value, uint8_t high_bit);
-  void registerDecToBcd(Register reg, uint8_t value);
 };
 
 #endif  // DS1302_H_

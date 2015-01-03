@@ -76,25 +76,6 @@ uint8_t DS1302::readIn() {
   return input_value;
 }
 
-void DS1302::registerDecToBcd(const Register reg, uint8_t value,
-                              const uint8_t high_bit) {
-  const uint8_t mask = (1 << (high_bit + 1)) - 1;
-  uint8_t regv = readRegister(reg);
-
-  // Convert value to bcd in place.
-  value = decToBcd(value);
-
-  // Replace high bits of register if needed.
-  value &= mask;
-  value |= (regv &= ~mask);
-
-  writeRegister(reg, value);
-}
-
-void DS1302::registerDecToBcd(const Register reg, const uint8_t value) {
-  registerDecToBcd(reg, value, 7);
-}
-
 uint8_t DS1302::readRegister(const Register reg) {
   uint8_t cmd_byte = 129;  // 1000 0001
   uint8_t reg_value;
