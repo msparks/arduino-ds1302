@@ -87,8 +87,6 @@ Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
   this->day  = day;
 }
 
-const int DS1302::kRamSize = 31;
-
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
                const uint8_t sclk_pin) {
   ce_pin_ = ce_pin;
@@ -189,8 +187,7 @@ void DS1302::time(const Time t) {
 }
 
 void DS1302::writeRam(const uint8_t address, const uint8_t value) {
-  // Only RAM addresses in [0, 30] are valid.
-  if (address > 30) {
+  if (address >= kRamSize) {
     return;
   }
 
@@ -198,8 +195,7 @@ void DS1302::writeRam(const uint8_t address, const uint8_t value) {
 }
 
 uint8_t DS1302::readRam(const uint8_t address) {
-  // Only RAM addresses in [0, 30] are valid.
-  if (address > 30) {
+  if (address >= kRamSize) {
     return 0;
   }
 

@@ -54,7 +54,7 @@ class Time {
 class DS1302 {
  public:
   // Size of the DS1302's RAM storage, in bytes.
-  static const int kRamSize;
+  static const int kRamSize = 31;
 
   // Prepares to interface with the chip on the given I/O pins.
   //
@@ -116,7 +116,7 @@ class DS1302 {
   // Writes to invalid addresses have no effect.
   //
   // Args:
-  //   address: RAM address in [0, 30].
+  //   address: RAM address in [0, kRamSize).
   //   value: Byte to write to the RAM address.
   void writeRam(uint8_t address, uint8_t value);
 
@@ -125,7 +125,7 @@ class DS1302 {
   // Reads of invalid addresses return 0.
   //
   // Args:
-  //   address: RAM address in [0, 30].
+  //   address: RAM address in [0, kRamSize).
   //
   // Returns:
   //   Byte from RAM or 0 if the address is invalid.
