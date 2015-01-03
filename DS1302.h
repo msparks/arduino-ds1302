@@ -43,8 +43,12 @@ class Time {
   uint16_t yr;
 };
 
-
-// Talks to a Dallas Semiconductor DS1302 Real Time Clock (RTC) chip.
+// An interface to the Dallas Semiconductor DS1302 Real Time Clock (RTC) chip.
+//
+// Accessing and setting individual components of the time are not supported in
+// this interface as doing so can lead to errors if the time changes as it is
+// being read or modified. Instead, using DS1302::time() guarantees safe reads
+// and writes using the DS1302's burst mode feature.
 class DS1302 {
  public:
   enum Register {
@@ -94,31 +98,11 @@ class DS1302 {
   //   value: true to set halt flag, false to clear.
   void halt(bool value);
 
-  // Returns an individual piece of the time and date.
-  uint8_t seconds();
-  uint8_t minutes();
-  uint8_t hour();
-  uint8_t date();
-  uint8_t month();
-  Time::Day day();
-  uint16_t year();
-
   // Returns the current time and date in a Time object.
   //
   // Returns:
   //   Current time as Time object.
   Time time();
-
-  // Individually sets pieces of the date and time.
-  //
-  // The arguments here follow the rules specified above in Time::Time(...).
-  void seconds(uint8_t sec);
-  void minutes(uint8_t min);
-  void hour(uint8_t hr);
-  void date(uint8_t date);
-  void month(uint8_t mon);
-  void day(Time::Day day);
-  void year(uint16_t yr);
 
   // Sets the time and date to the instant specified in a given Time object.
   //

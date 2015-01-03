@@ -134,35 +134,6 @@ void DS1302::halt(const bool enable) {
   writeRegister(kSecondReg, sec);
 }
 
-uint8_t DS1302::seconds() {
-  // Bit 7 is the Clock Halt (CH) flag. Remove it before decoding.
-  return bcdToDec(readRegister(kSecondReg) & 0x7F);
-}
-
-uint8_t DS1302::minutes() {
-  return bcdToDec(readRegister(kMinuteReg));
-}
-
-uint8_t DS1302::hour() {
-  return hourFromRegisterValue(readRegister(kHourReg));
-}
-
-uint8_t DS1302::date() {
-  return bcdToDec(readRegister(kDateReg));
-}
-
-uint8_t DS1302::month() {
-  return bcdToDec(readRegister(kMonthReg));
-}
-
-Time::Day DS1302::day() {
-  return static_cast<Time::Day>(bcdToDec(readRegister(kDayReg)));
-}
-
-uint16_t DS1302::year() {
-  return 2000 + bcdToDec(readRegister(kYearReg));
-}
-
 Time DS1302::time() {
   Time t(2099, 1, 1, 0, 0, 0, Time::kSunday);
 
@@ -182,36 +153,6 @@ Time DS1302::time() {
   digitalWrite(ce_pin_, LOW);
 
   return t;
-}
-
-void DS1302::seconds(const uint8_t sec) {
-  registerDecToBcd(kSecondReg, sec, 6);
-}
-
-void DS1302::minutes(const uint8_t min) {
-  registerDecToBcd(kMinuteReg, min, 6);
-}
-
-void DS1302::hour(const uint8_t hr) {
-  writeRegister(kHourReg, 0);  // set 24-hour mode
-  registerDecToBcd(kHourReg, hr, 5);
-}
-
-void DS1302::date(const uint8_t date) {
-  registerDecToBcd(kDateReg, date, 5);
-}
-
-void DS1302::month(const uint8_t mon) {
-  registerDecToBcd(kMonthReg, mon, 4);
-}
-
-void DS1302::day(const Time::Day day) {
-  registerDecToBcd(kDayReg, static_cast<int>(day), 2);
-}
-
-void DS1302::year(uint16_t yr) {
-  yr -= 2000;
-  registerDecToBcd(kYearReg, yr);
 }
 
 void DS1302::time(const Time t) {
