@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <DS1302.h>
 
 namespace {
@@ -20,27 +21,30 @@ void setup() {
 
   rtc.writeProtect(false);
 
-  // Clear all RAM bytes.
-  for (int i = 0; i < 31; ++i) {
+  // Clear all RAM bytes, using the byte interface.
+  for (int i = 0; i < DS1302::kRamSize; ++i) {
     rtc.writeRam(i, 0x00);
   }
 
-  // Write a string to the RAM.
+  // Write a string using the bulk interface.
   static const char kHelloWorld[] = "hello world";
-  for (int i = 0; i < sizeof(kHelloWorld) - 1; ++i) {
-    rtc.writeRam(i, kHelloWorld[i]);
-  }
+  rtc.writeRamBulk((uint8_t*)kHelloWorld, sizeof(kHelloWorld) - 1);
 }
 
 void loop() {
-  // Read all of the RAM.
-  for (int i = 0; i < 31; ++i) {
-    const char c = static_cast<char>(rtc.readRam(i));
-    Serial.print("RAM index ");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.println(c);
+  char buf[32];
+
+  // Print the RAM byte values as hex using the byte interface.
+  for (int i = 0; i < DS1302::kRamSize; ++i) {
+    snprintf(buf, sizeof(buf), "[%02X]", rtc.readRam(i));
+    Serial.print(buf);
   }
+  Serial.println();
+
+  // Print the RAM byte values as ASCII using the bulk interface.
+  uint8_t ram[DS1302::kRamSize];
+  rtc.readRamBulk(ram, DS1302::kRamSize);
+  Serial.println((const char*)ram);
 
   delay(3000);
 }

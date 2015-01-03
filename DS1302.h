@@ -53,6 +53,9 @@ class Time {
 // and writes using the DS1302's burst mode feature.
 class DS1302 {
  public:
+  // Size of the DS1302's RAM storage, in bytes.
+  static const int kRamSize;
+
   // Prepares to interface with the chip on the given I/O pins.
   //
   // Args:
@@ -107,8 +110,8 @@ class DS1302 {
 
   // Writes a byte to RAM.
   //
-  // The DS1302 has 31 bytes of static RAM that can store arbitrary data as long
-  // as the device has power.
+  // The DS1302 has 31 bytes (kRamSize) of static RAM that can store arbitrary
+  // data as long as the device has power.
   //
   // Writes to invalid addresses have no effect.
   //
@@ -127,6 +130,20 @@ class DS1302 {
   // Returns:
   //   Byte from RAM or 0 if the address is invalid.
   uint8_t readRam(uint8_t address);
+
+  // Writes 'len' bytes into RAM from '*data', starting at RAM address 0.
+  //
+  // Args:
+  //   data: Input data.
+  //   len: Number of bytes of '*data' to read. Must be <= kRamSize.
+  void writeRamBulk(const uint8_t* data, int len);
+
+  // Reads 'len' bytes from RAM into '*data', starting at RAM address 0.
+  //
+  // Args:
+  //   data: Output data.
+  //   len: Number of bytes of RAM to read. Must be <= kRamSize.
+  void readRamBulk(uint8_t* data, int len);
 
   // Reads register byte value.
   //

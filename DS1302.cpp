@@ -60,6 +60,8 @@ Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
   this->day  = day;
 }
 
+const int DS1302::kRamSize = 31;
+
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
                const uint8_t sclk_pin) {
   ce_pin_ = ce_pin;
@@ -189,4 +191,42 @@ uint8_t DS1302::readRam(const uint8_t address) {
   }
 
   return readRegister(kRamRegisterOffset + address);
+}
+
+void DS1302::writeRamBulk(const uint8_t* const data, int len) {
+  if (len <= 0) {
+    return;
+  }
+  if (len > kRamSize) {
+    len = kRamSize;
+  }
+
+  digitalWrite(sclk_pin_, LOW);
+  digitalWrite(ce_pin_, HIGH);
+  writeOut(0xFE);  // RAM write in burst mode.
+
+  for (int i = 0; i < len; ++i) {
+    writeOut(data[i]);
+  }
+
+  digitalWrite(ce_pin_, LOW);
+}
+
+void DS1302::readRamBulk(uint8_t* const data, int len) {
+  if (len <= 0) {
+    return;
+  }
+  if (len > kRamSize) {
+    len = kRamSize;
+  }
+
+  digitalWrite(sclk_pin_, LOW);
+  digitalWrite(ce_pin_, HIGH);
+  writeOut(0xFF);  // RAM read in burst mode.
+
+  for (int i = 0; i < len; ++i) {
+    data[i] = readIn();
+  }
+
+  digitalWrite(ce_pin_, LOW);
 }
