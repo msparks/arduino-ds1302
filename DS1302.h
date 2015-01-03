@@ -7,6 +7,8 @@
 #ifndef DS1302_H_
 #define DS1302_H_
 
+#include <stdint.h>
+
 // Class representing a particular time and date.
 class Time {
  public:

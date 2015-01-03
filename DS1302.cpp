@@ -5,6 +5,8 @@
 #endif
 #include "DS1302.h"
 
+#include <stdint.h>
+
 namespace {
 
 enum Register {
