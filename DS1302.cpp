@@ -30,6 +30,25 @@ enum Command {
   kRamBurstWrite   = 0xFE
 };
 
+// Establishes and terminates a three-wire SPI session.
+class SPISession {
+ public:
+  SPISession(const int ce_pin, const int io_pin, const int sclk_pin)
+      : ce_pin_(ce_pin), io_pin_(io_pin), sclk_pin_(sclk_pin) {
+    digitalWrite(sclk_pin_, LOW);
+    digitalWrite(ce_pin_, HIGH);
+    delayMicroseconds(4);  // tCC
+  }
+  ~SPISession() {
+    digitalWrite(ce_pin_, LOW);
+  }
+
+ private:
+  const int ce_pin_;
+  const int io_pin_;
+  const int sclk_pin_;
+};
+
 // Returns the decoded decimal value from a binary-coded decimal (BCD) byte.
 // Assumes 'bcd' is coded with 4-bits per digit, with the tens place digit in
 // the upper 4 MSBs.
@@ -102,29 +121,19 @@ uint8_t DS1302::readIn() {
 }
 
 uint8_t DS1302::readRegister(const uint8_t reg) {
+  const SPISession s(ce_pin_, io_pin_, sclk_pin_);
+
   const uint8_t cmd_byte = (0x81 | (reg << 1));
-
-  digitalWrite(sclk_pin_, LOW);
-  digitalWrite(ce_pin_, HIGH);
-
   writeOut(cmd_byte);
-  const uint8_t reg_value = readIn();
-
-  digitalWrite(ce_pin_, LOW);
-
-  return reg_value;
+  return readIn();
 }
 
 void DS1302::writeRegister(const uint8_t reg, const uint8_t value) {
+  const SPISession s(ce_pin_, io_pin_, sclk_pin_);
+
   const uint8_t cmd_byte = (0x80 | (reg << 1));
-
-  digitalWrite(sclk_pin_, LOW);
-  digitalWrite(ce_pin_, HIGH);
-
   writeOut(cmd_byte);
   writeOut(value);
-
-  digitalWrite(ce_pin_, LOW);
 }
 
 void DS1302::writeProtect(const bool enable) {
@@ -139,12 +148,10 @@ void DS1302::halt(const bool enable) {
 }
 
 Time DS1302::time() {
+  const SPISession s(ce_pin_, io_pin_, sclk_pin_);
+
   Time t(2099, 1, 1, 0, 0, 0, Time::kSunday);
-
-  digitalWrite(sclk_pin_, LOW);
-  digitalWrite(ce_pin_, HIGH);
   writeOut(kClockBurstRead);
-
   t.sec = bcdToDec(readIn() & 0x7F);
   t.min = bcdToDec(readIn());
   t.hr = hourFromRegisterValue(readIn());
@@ -152,9 +159,6 @@ Time DS1302::time() {
   t.mon = bcdToDec(readIn());
   t.day = static_cast<Time::Day>(bcdToDec(readIn()));
   t.yr = 2000 + bcdToDec(readIn());
-
-  digitalWrite(ce_pin_, LOW);
-
   return t;
 }
 
@@ -162,10 +166,9 @@ void DS1302::time(const Time t) {
   // We want to maintain the Clock Halt flag if it is set.
   const uint8_t ch_value = readRegister(kSecondReg) & 0x80;
 
-  digitalWrite(sclk_pin_, LOW);
-  digitalWrite(ce_pin_, HIGH);
-  writeOut(kClockBurstWrite);
+  const SPISession s(ce_pin_, io_pin_, sclk_pin_);
 
+  writeOut(kClockBurstWrite);
   writeOut(ch_value | decToBcd(t.sec));
   writeOut(decToBcd(t.min));
   writeOut(decToBcd(t.hr));
@@ -174,8 +177,6 @@ void DS1302::time(const Time t) {
   writeOut(decToBcd(static_cast<uint8_t>(t.day)));
   writeOut(decToBcd(t.yr - 2000));
   writeOut(0);  // Write protection register.
-
-  digitalWrite(ce_pin_, LOW);
 }
 
 void DS1302::writeRam(const uint8_t address, const uint8_t value) {
@@ -204,15 +205,12 @@ void DS1302::writeRamBulk(const uint8_t* const data, int len) {
     len = kRamSize;
   }
 
-  digitalWrite(sclk_pin_, LOW);
-  digitalWrite(ce_pin_, HIGH);
-  writeOut(kRamBurstWrite);
+  const SPISession s(ce_pin_, io_pin_, sclk_pin_);
 
+  writeOut(kRamBurstWrite);
   for (int i = 0; i < len; ++i) {
     writeOut(data[i]);
   }
-
-  digitalWrite(ce_pin_, LOW);
 }
 
 void DS1302::readRamBulk(uint8_t* const data, int len) {
@@ -223,13 +221,10 @@ void DS1302::readRamBulk(uint8_t* const data, int len) {
     len = kRamSize;
   }
 
-  digitalWrite(sclk_pin_, LOW);
-  digitalWrite(ce_pin_, HIGH);
-  writeOut(kRamBurstRead);
+  const SPISession s(ce_pin_, io_pin_, sclk_pin_);
 
+  writeOut(kRamBurstRead);
   for (int i = 0; i < len; ++i) {
     data[i] = readIn();
   }
-
-  digitalWrite(ce_pin_, LOW);
 }
