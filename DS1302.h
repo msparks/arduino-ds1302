@@ -147,17 +147,6 @@ private:
   //   byte read in
   uint8_t readIn();
 
-  // Gets a binary-coded decimal register and returns it in decimal.
-  //
-  // Args:
-  //   reg: register number
-  //   high_bit: number of the bit containing the last BCD value ({0, ..., 7})
-  //
-  // Returns:
-  //   decimal value
-  uint8_t registerBcdToDec(Register reg, uint8_t high_bit);
-  uint8_t registerBcdToDec(Register reg);
-
   // Sets a register with binary-coded decimal converted from a given value.
   //
   // Args:

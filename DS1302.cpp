@@ -5,6 +5,24 @@
 #endif
 #include "DS1302.h"
 
+namespace {
+
+// Returns the decoded decimal value from a binary-coded decimal (BCD) byte.
+// Assumes 'bcd' is coded with 4-bits per digit, with the tens place digit in
+// the upper 4 MSBs.
+uint8_t bcdToDec(const uint8_t bcd) {
+  return (10 * ((bcd & 0xF0) >> 4) + (bcd & 0x0F));
+}
+
+// Returns the binary-coded decimal of 'dec'. Inverse of bcdToDec.
+uint8_t decToBcd(const uint8_t dec) {
+  const uint8_t tens = dec / 10;
+  const uint8_t ones = dec % 10;
+  return (tens << 4) | ones;
+}
+
+}  // namespace
+
 Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
            const uint8_t hr, const uint8_t min, const uint8_t sec,
            const Day day) {
@@ -16,7 +34,6 @@ Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
   this->sec  = sec;
   this->day  = day;
 }
-
 
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
                const uint8_t sclk_pin) {
@@ -50,29 +67,15 @@ uint8_t DS1302::readIn() {
   return input_value;
 }
 
-uint8_t DS1302::registerBcdToDec(const Register reg, const uint8_t high_bit) {
-  const uint8_t mask = (1 << (high_bit + 1)) - 1;
-  uint8_t val = readRegister(reg);
-  val &= mask;
-  val = (val & 15) + 10 * ((val & (15 << 4)) >> 4);
-  return val;
-}
-
-uint8_t DS1302::registerBcdToDec(const Register reg) {
-  return registerBcdToDec(reg, 7);
-}
-
 void DS1302::registerDecToBcd(const Register reg, uint8_t value,
                               const uint8_t high_bit) {
   const uint8_t mask = (1 << (high_bit + 1)) - 1;
   uint8_t regv = readRegister(reg);
 
   // Convert value to bcd in place.
-  uint8_t tvalue = value / 10;
-  value = value % 10;
-  value |= (tvalue << 4);
+  value = decToBcd(value);
 
-  // Replace high bits of value if needed.
+  // Replace high bits of register if needed.
   value &= mask;
   value |= (regv &= ~mask);
 
@@ -123,11 +126,12 @@ void DS1302::halt(const bool enable) {
 }
 
 uint8_t DS1302::seconds() {
-  return registerBcdToDec(kSecondReg, 6);
+  // Bit 7 is the Clock Halt (CH) flag. Remove it before decoding.
+  return bcdToDec(readRegister(kSecondReg) & 0x7F);
 }
 
 uint8_t DS1302::minutes() {
-  return registerBcdToDec(kMinuteReg);
+  return bcdToDec(readRegister(kMinuteReg));
 }
 
 uint8_t DS1302::hour() {
@@ -142,19 +146,19 @@ uint8_t DS1302::hour() {
 }
 
 uint8_t DS1302::date() {
-  return registerBcdToDec(kDateReg, 5);
+  return bcdToDec(readRegister(kDateReg));
 }
 
 uint8_t DS1302::month() {
-  return registerBcdToDec(kMonthReg, 4);
+  return bcdToDec(readRegister(kMonthReg));
 }
 
 Time::Day DS1302::day() {
-  return static_cast<Time::Day>(registerBcdToDec(kDayReg, 2));
+  return static_cast<Time::Day>(bcdToDec(readRegister(kDayReg)));
 }
 
 uint16_t DS1302::year() {
-  return 2000 + registerBcdToDec(kYearReg);
+  return 2000 + bcdToDec(readRegister(kYearReg));
 }
 
 Time DS1302::time() {
