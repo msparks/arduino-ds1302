@@ -7,6 +7,17 @@
 
 namespace {
 
+enum Register {
+  kSecondReg       = 0,
+  kMinuteReg       = 1,
+  kHourReg         = 2,
+  kDateReg         = 3,
+  kMonthReg        = 4,
+  kDayReg          = 5,
+  kYearReg         = 6,
+  kWriteProtectReg = 7
+};
+
 // Returns the decoded decimal value from a binary-coded decimal (BCD) byte.
 // Assumes 'bcd' is coded with 4-bits per digit, with the tens place digit in
 // the upper 4 MSBs.
@@ -76,7 +87,7 @@ uint8_t DS1302::readIn() {
   return input_value;
 }
 
-uint8_t DS1302::readRegister(const Register reg) {
+uint8_t DS1302::readRegister(const uint8_t reg) {
   uint8_t cmd_byte = 129;  // 1000 0001
   uint8_t reg_value;
   cmd_byte |= (reg << 1);
@@ -92,7 +103,7 @@ uint8_t DS1302::readRegister(const Register reg) {
   return reg_value;
 }
 
-void DS1302::writeRegister(const Register reg, const uint8_t value) {
+void DS1302::writeRegister(const uint8_t reg, const uint8_t value) {
   uint8_t cmd_byte = (128 | (reg << 1));
 
   digitalWrite(sclk_pin_, LOW);

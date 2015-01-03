@@ -51,17 +51,6 @@ class Time {
 // and writes using the DS1302's burst mode feature.
 class DS1302 {
  public:
-  enum Register {
-    kSecondReg       = 0,
-    kMinuteReg       = 1,
-    kHourReg         = 2,
-    kDateReg         = 3,
-    kMonthReg        = 4,
-    kDayReg          = 5,
-    kYearReg         = 6,
-    kWriteProtectReg = 7
-  };
-
   // Prepares to interface with the chip on the given I/O pins.
   //
   // Args:
@@ -69,22 +58,6 @@ class DS1302 {
   //   io_pin: IO pin number
   //   sclk_pin: SCLK pin number
   DS1302(uint8_t ce_pin, uint8_t io_pin, uint8_t sclk_pin);
-
-  // Reads register byte value.
-  //
-  // Args:
-  //   reg: register number
-  //
-  // Returns:
-  //   register value
-  uint8_t readRegister(Register reg);
-
-  // Writes byte into register.
-  //
-  // Args:
-  //   reg: register number
-  //   value: byte to write
-  void writeRegister(Register reg, uint8_t value);
 
   // Enables or disables write protection on the chip.
   //
@@ -129,6 +102,22 @@ class DS1302 {
   // Args:
   //   t: Time instant.
   void time(Time t);
+
+  // Reads register byte value.
+  //
+  // Args:
+  //   reg: register number
+  //
+  // Returns:
+  //   register value
+  uint8_t readRegister(uint8_t reg);
+
+  // Writes byte into register.
+  //
+  // Args:
+  //   reg: register number
+  //   value: byte to write
+  void writeRegister(uint8_t reg, uint8_t value);
 
 private:
   uint8_t ce_pin_;
