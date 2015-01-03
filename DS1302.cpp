@@ -64,6 +64,7 @@ uint8_t decToBcd(const uint8_t dec) {
   return (tens << 4) | ones;
 }
 
+// Returns the hour in 24-hour format from the hour register value.
 uint8_t hourFromRegisterValue(const uint8_t value) {
   uint8_t adj;
   if (value & 128)  // 12-hour mode
@@ -183,6 +184,8 @@ void DS1302::time(const Time t) {
   writeOut(decToBcd(t.mon));
   writeOut(decToBcd(static_cast<uint8_t>(t.day)));
   writeOut(decToBcd(t.yr - 2000));
+  // All clock registers *and* the WP register have to be written for the time
+  // to be set.
   writeOut(0);  // Write protection register.
 }
 
