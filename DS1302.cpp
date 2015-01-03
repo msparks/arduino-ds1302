@@ -41,6 +41,7 @@ class SPISession {
   }
   ~SPISession() {
     digitalWrite(ce_pin_, LOW);
+    delayMicroseconds(4);  // tCWH
   }
 
  private:
@@ -100,6 +101,10 @@ DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
 
 void DS1302::writeOut(const uint8_t value) {
   pinMode(io_pin_, OUTPUT);
+  // This assumes that shiftOut is 'slow' enough for the DS1302 to read the
+  // bits. The datasheet specifies that SCLK must be in its high and low states
+  // for at least 0.25us at 5V or 1us at 2V. Experimentally, a 16MHz Arduino
+  // seems to spend ~4us high and ~12us low when shifting.
   shiftOut(io_pin_, sclk_pin_, LSBFIRST, value);
 }
 
@@ -108,12 +113,16 @@ uint8_t DS1302::readIn() {
   uint8_t bit = 0;
   pinMode(io_pin_, INPUT);
 
+  // Bits from the DS1302 are output on the falling edge of the clock
+  // cycle. This method is called after a previous call to writeOut() or
+  // readIn(), which will have already set the clock low.
   for (int i = 0; i < 8; ++i) {
     bit = digitalRead(io_pin_);
-    input_value |= (bit << i);
+    input_value |= (bit << i);  // Bits are read LSB first.
 
+    // See the note in writeOut() about timing. digitalWrite() is slow enough to
+    // not require extra delays for tCH and tCL.
     digitalWrite(sclk_pin_, HIGH);
-    delayMicroseconds(1);
     digitalWrite(sclk_pin_, LOW);
   }
 
