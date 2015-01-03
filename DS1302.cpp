@@ -21,6 +21,15 @@ uint8_t decToBcd(const uint8_t dec) {
   return (tens << 4) | ones;
 }
 
+uint8_t hourFromRegisterValue(const uint8_t value) {
+  uint8_t adj;
+  if (value & 128)  // 12-hour mode
+    adj = 12 * ((value & 32) >> 5);
+  else           // 24-hour mode
+    adj = 10 * ((value & (32 + 16)) >> 4);
+  return (value & 15) + adj;
+}
+
 }  // namespace
 
 Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
@@ -135,14 +144,7 @@ uint8_t DS1302::minutes() {
 }
 
 uint8_t DS1302::hour() {
-  uint8_t hr = readRegister(kHourReg);
-  uint8_t adj;
-  if (hr & 128)  // 12-hour mode
-    adj = 12 * ((hr & 32) >> 5);
-  else           // 24-hour mode
-    adj = 10 * ((hr & (32 + 16)) >> 4);
-  hr = (hr & 15) + adj;
-  return hr;
+  return hourFromRegisterValue(readRegister(kHourReg));
 }
 
 uint8_t DS1302::date() {
@@ -162,9 +164,24 @@ uint16_t DS1302::year() {
 }
 
 Time DS1302::time() {
-  return Time(year(), month(), date(),
-              hour(), minutes(), seconds(),
-              day());
+  Time t(2099, 1, 1, 0, 0, 0, Time::kSunday);
+
+  const uint8_t cmd_byte = 0xBF;  // Clock burst read.
+  digitalWrite(sclk_pin_, LOW);
+  digitalWrite(ce_pin_, HIGH);
+  writeOut(cmd_byte);
+
+  t.sec = bcdToDec(readIn() & 0x7F);
+  t.min = bcdToDec(readIn());
+  t.hr = hourFromRegisterValue(readIn());
+  t.date = bcdToDec(readIn());
+  t.mon = bcdToDec(readIn());
+  t.day = static_cast<Time::Day>(bcdToDec(readIn()));
+  t.yr = 2000 + bcdToDec(readIn());
+
+  digitalWrite(ce_pin_, LOW);
+
+  return t;
 }
 
 void DS1302::seconds(const uint8_t sec) {
@@ -198,11 +215,22 @@ void DS1302::year(uint16_t yr) {
 }
 
 void DS1302::time(const Time t) {
-  seconds(t.sec);
-  minutes(t.min);
-  hour(t.hr);
-  date(t.date);
-  month(t.mon);
-  day(t.day);
-  year(t.yr);
+  // We want to maintain the Clock Halt flag if it is set.
+  const uint8_t ch_value = readRegister(kSecondReg) & 0x80;
+
+  const uint8_t cmd_byte = 0xBE;  // Clock burst write.
+  digitalWrite(sclk_pin_, LOW);
+  digitalWrite(ce_pin_, HIGH);
+  writeOut(cmd_byte);
+
+  writeOut(ch_value | decToBcd(t.sec));
+  writeOut(decToBcd(t.min));
+  writeOut(decToBcd(t.hr));
+  writeOut(decToBcd(t.date));
+  writeOut(decToBcd(t.mon));
+  writeOut(decToBcd(static_cast<uint8_t>(t.day)));
+  writeOut(decToBcd(t.yr - 2000));
+  writeOut(0);  // Write protection register.
+
+  digitalWrite(ce_pin_, LOW);
 }
