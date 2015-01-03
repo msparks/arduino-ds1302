@@ -86,13 +86,29 @@ class DS1302 {
   //   value: byte to write
   void writeRegister(Register reg, uint8_t value);
 
-  // Enables or disables write protection on chip.
+  // Enables or disables write protection on the chip.
+  //
+  // While write protection is enabled, all attempts to write to the chip (e.g.,
+  // setting the time) will have no effect.
+  //
+  // The DS1302 datasheet does not define the initial state of write protection,
+  // so this method should be called at least once when initializing a device
+  // for the first time.
   //
   // Args:
-  //   enable: true to enable, false to disable.
+  //   enable: true to enable write protection.
   void writeProtect(bool enable);
 
-  // Set or clear clock halt flag.
+  // Set or clear Clock Halt flag on the chip.
+  //
+  // Enabling the Clock Halt flag disables the DS1302's clock oscillator and
+  // places it into a low-power standby mode. While in this mode, the time does
+  // not progress. The time can still be read from the chip while it is halted,
+  // however.
+  //
+  // The DS1302 datasheet does not define the initial state of the Clock Halt
+  // flag, so this method should be called at least once when initializing a
+  // device for the first time.
   //
   // Args:
   //   value: true to set halt flag, false to clear.
@@ -106,8 +122,12 @@ class DS1302 {
 
   // Sets the time and date to the instant specified in a given Time object.
   //
+  // The time will not be set if write protection is enabled on the
+  // chip. Setting the time with this function has no effect on the Clock Halt
+  // flag.
+  //
   // Args:
-  //   t: Time object to use
+  //   t: Time instant.
   void time(Time t);
 
 private:
