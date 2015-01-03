@@ -23,6 +23,13 @@ enum Register {
   kWriteProtectReg = 7
 };
 
+enum Command {
+  kClockBurstRead  = 0xBF,
+  kClockBurstWrite = 0xBE,
+  kRamBurstRead    = 0xFF,
+  kRamBurstWrite   = 0xFE
+};
+
 // Returns the decoded decimal value from a binary-coded decimal (BCD) byte.
 // Assumes 'bcd' is coded with 4-bits per digit, with the tens place digit in
 // the upper 4 MSBs.
@@ -95,15 +102,13 @@ uint8_t DS1302::readIn() {
 }
 
 uint8_t DS1302::readRegister(const uint8_t reg) {
-  uint8_t cmd_byte = 129;  // 1000 0001
-  uint8_t reg_value;
-  cmd_byte |= (reg << 1);
+  const uint8_t cmd_byte = (0x81 | (reg << 1));
 
   digitalWrite(sclk_pin_, LOW);
   digitalWrite(ce_pin_, HIGH);
 
   writeOut(cmd_byte);
-  reg_value = readIn();
+  const uint8_t reg_value = readIn();
 
   digitalWrite(ce_pin_, LOW);
 
@@ -111,7 +116,7 @@ uint8_t DS1302::readRegister(const uint8_t reg) {
 }
 
 void DS1302::writeRegister(const uint8_t reg, const uint8_t value) {
-  uint8_t cmd_byte = (128 | (reg << 1));
+  const uint8_t cmd_byte = (0x80 | (reg << 1));
 
   digitalWrite(sclk_pin_, LOW);
   digitalWrite(ce_pin_, HIGH);
@@ -136,10 +141,9 @@ void DS1302::halt(const bool enable) {
 Time DS1302::time() {
   Time t(2099, 1, 1, 0, 0, 0, Time::kSunday);
 
-  const uint8_t cmd_byte = 0xBF;  // Clock burst read.
   digitalWrite(sclk_pin_, LOW);
   digitalWrite(ce_pin_, HIGH);
-  writeOut(cmd_byte);
+  writeOut(kClockBurstRead);
 
   t.sec = bcdToDec(readIn() & 0x7F);
   t.min = bcdToDec(readIn());
@@ -158,10 +162,9 @@ void DS1302::time(const Time t) {
   // We want to maintain the Clock Halt flag if it is set.
   const uint8_t ch_value = readRegister(kSecondReg) & 0x80;
 
-  const uint8_t cmd_byte = 0xBE;  // Clock burst write.
   digitalWrite(sclk_pin_, LOW);
   digitalWrite(ce_pin_, HIGH);
-  writeOut(cmd_byte);
+  writeOut(kClockBurstWrite);
 
   writeOut(ch_value | decToBcd(t.sec));
   writeOut(decToBcd(t.min));
@@ -203,7 +206,7 @@ void DS1302::writeRamBulk(const uint8_t* const data, int len) {
 
   digitalWrite(sclk_pin_, LOW);
   digitalWrite(ce_pin_, HIGH);
-  writeOut(0xFE);  // RAM write in burst mode.
+  writeOut(kRamBurstWrite);
 
   for (int i = 0; i < len; ++i) {
     writeOut(data[i]);
@@ -222,7 +225,7 @@ void DS1302::readRamBulk(uint8_t* const data, int len) {
 
   digitalWrite(sclk_pin_, LOW);
   digitalWrite(ce_pin_, HIGH);
-  writeOut(0xFF);  // RAM read in burst mode.
+  writeOut(kRamBurstRead);
 
   for (int i = 0; i < len; ++i) {
     data[i] = readIn();
