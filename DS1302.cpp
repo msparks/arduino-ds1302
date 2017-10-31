@@ -94,17 +94,31 @@ DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
   io_pin_ = io_pin;
   sclk_pin_ = sclk_pin;
 
+  digitalWrite(ce_pin, LOW);
   pinMode(ce_pin, OUTPUT);
+  pinMode(io_pin, INPUT);
+  digitalWrite(sclk_pin, LOW);
   pinMode(sclk_pin, OUTPUT);
 }
 
-void DS1302::writeOut(const uint8_t value) {
+void DS1302::writeOut(const uint8_t value, bool readAfter) {
   pinMode(io_pin_, OUTPUT);
-  // This assumes that shiftOut is 'slow' enough for the DS1302 to read the
-  // bits. The datasheet specifies that SCLK must be in its high and low states
-  // for at least 0.25us at 5V or 1us at 2V. Experimentally, a 16MHz Arduino
-  // seems to spend ~4us high and ~12us low when shifting.
-  shiftOut(io_pin_, sclk_pin_, LSBFIRST, value);
+
+  for (int i = 0; i < 8; ++i) {
+    digitalWrite(io_pin_, (value >> i) & 1);
+    delayMicroseconds(1);
+    digitalWrite(sclk_pin_, HIGH);
+    delayMicroseconds(1);
+
+    if (readAfter && i == 7) {
+      // We're about to read data -- ensure the pin is back in input mode
+      // before the clock is lowered.
+      pinMode(io_pin_, INPUT);
+    } else {
+      digitalWrite(sclk_pin_, LOW);
+      delayMicroseconds(1);
+    }
+  }
 }
 
 uint8_t DS1302::readIn() {
@@ -113,16 +127,16 @@ uint8_t DS1302::readIn() {
   pinMode(io_pin_, INPUT);
 
   // Bits from the DS1302 are output on the falling edge of the clock
-  // cycle. This method is called after a previous call to writeOut() or
-  // readIn(), which will have already set the clock low.
+  // cycle. This is called after readIn (which will leave the clock low) or
+  // writeOut(..., true) (which will leave it high).
   for (int i = 0; i < 8; ++i) {
+    digitalWrite(sclk_pin_, HIGH);
+    delayMicroseconds(1);
+    digitalWrite(sclk_pin_, LOW);
+    delayMicroseconds(1);
+
     bit = digitalRead(io_pin_);
     input_value |= (bit << i);  // Bits are read LSB first.
-
-    // See the note in writeOut() about timing. digitalWrite() is slow enough to
-    // not require extra delays for tCH and tCL.
-    digitalWrite(sclk_pin_, HIGH);
-    digitalWrite(sclk_pin_, LOW);
   }
 
   return input_value;
@@ -132,7 +146,7 @@ uint8_t DS1302::readRegister(const uint8_t reg) {
   const SPISession s(ce_pin_, io_pin_, sclk_pin_);
 
   const uint8_t cmd_byte = (0x81 | (reg << 1));
-  writeOut(cmd_byte);
+  writeOut(cmd_byte, true);
   return readIn();
 }
 
@@ -159,7 +173,7 @@ Time DS1302::time() {
   const SPISession s(ce_pin_, io_pin_, sclk_pin_);
 
   Time t(2099, 1, 1, 0, 0, 0, Time::kSunday);
-  writeOut(kClockBurstRead);
+  writeOut(kClockBurstRead, true);
   t.sec = bcdToDec(readIn() & 0x7F);
   t.min = bcdToDec(readIn());
   t.hr = hourFromRegisterValue(readIn());
@@ -231,7 +245,7 @@ void DS1302::readRamBulk(uint8_t* const data, int len) {
 
   const SPISession s(ce_pin_, io_pin_, sclk_pin_);
 
-  writeOut(kRamBurstRead);
+  writeOut(kRamBurstRead, true);
   for (int i = 0; i < len; ++i) {
     data[i] = readIn();
   }

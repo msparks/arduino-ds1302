@@ -172,7 +172,9 @@ private:
   //
   // Args:
   //   value: byte to shift out
-  void writeOut(uint8_t value);
+  //   readAfter: whether this will be followed by a read; if so, it
+  //     will leave io_pin_ as INPUT.
+  void writeOut(uint8_t value, bool readAfter = false);
 
   // Reads in a byte from the IO pin.
   //
