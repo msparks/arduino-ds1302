@@ -76,6 +76,12 @@ uint8_t hourFromRegisterValue(const uint8_t value) {
 
 }  // namespace
 
+/**
+  Number of days in each month, from January to November. December is not
+  needed. Omitting it avoids an incompatibility with Paul Stoffregen's Time
+  library. C.f. https://github.com/adafruit/RTClib/issues/114
+*/
+const uint8_t daysInMonth[] PROGMEM = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30};
 Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
            const uint8_t hr, const uint8_t min, const uint8_t sec,
            const Day day) {
@@ -86,6 +92,33 @@ Time::Time(const uint16_t yr, const uint8_t mon, const uint8_t date,
   this->min  = min;
   this->sec  = sec;
   this->day  = day;
+}
+
+Time::Time(uint32_t t) {
+  t -= SECONDS_FROM_1970_TO_2000; // bring to 2000 timestamp from 1970
+
+  sec = t % 60;
+  t /= 60;
+  min = t % 60;
+  t /= 60;
+  hr = t % 24;
+  uint16_t days = t / 24;
+  uint8_t leap;
+  for (yr = 0;; ++yr) {
+    leap = yr % 4 == 0;
+    if (days < 365U + leap)
+      break;
+    days -= 365 + leap;
+  }
+  for (mon = 1; mon < 12; ++mon) {
+    uint8_t daysPerMonth = daysInMonth[mon - 1];
+    if (leap && mon == 2)
+      ++daysPerMonth;
+    if (days < daysPerMonth)
+      break;
+    days -= daysPerMonth;
+  }
+  date = days + 1;
 }
 
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
