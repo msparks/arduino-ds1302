@@ -47,6 +47,8 @@ class Time {
   uint8_t mon;
   Day day;
   uint16_t yr;
+  uint32_t unixtime(void) const;
+  int32_t operator-(const Time &other);
 };
 
 // An interface to the Dallas Semiconductor DS1302 Real Time Clock (RTC) chip.

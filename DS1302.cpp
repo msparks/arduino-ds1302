@@ -121,6 +121,66 @@ Time::Time(uint32_t t) {
   date = days + 1;
 }
 
+
+/**************************************************************************/
+/*!
+    @brief  Given a date, return number of days since 2000/01/01,
+            valid for 2000--2099
+    @param y Year
+    @param m Month
+    @param d Day
+    @return Number of days
+*/
+/**************************************************************************/
+static uint16_t date_to_days(uint16_t y, uint8_t m, uint8_t d) {
+  if (y >= 2000U)
+    y -= 2000U;
+  uint16_t days = d;
+  for (uint8_t i = 1; i < m; ++i)
+    days += daysInMonth[i - 1];
+  if (m > 2 && y % 4 == 0)
+    ++days;
+  return days + 365 * y + (y + 3) / 4 - 1;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Given a number of days, hours, minutes, and seconds, return the
+   total seconds
+    @param days Days
+    @param h Hours
+    @param m Minutes
+    @param s Seconds
+    @return Number of seconds total
+*/
+/**************************************************************************/
+static uint32_t time_to_ulong(uint16_t days, uint8_t h, uint8_t m, uint8_t s) {
+  return ((days * 24ul + h) * 60 + m) * 60 + s;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Return Unix time: seconds since 1 Jan 1970.
+
+    @see The `DateTime::DateTime(uint32_t)` constructor is the converse of
+        this method.
+
+    @return Number of seconds since 1970-01-01 00:00:00.
+*/
+/**************************************************************************/
+uint32_t Time::unixtime(void) const {
+  uint32_t t;
+  uint16_t days = date_to_days(yr, mon, date);
+  t = time_to_ulong(days, hr, min, sec);
+  t += SECONDS_FROM_1970_TO_2000; // seconds from 1970 to 2000
+
+  return t;
+}
+
+int32_t Time::operator-(const Time &other) {
+  return this->unixtime() - other.unixtime();
+}
+
 DS1302::DS1302(const uint8_t ce_pin, const uint8_t io_pin,
                const uint8_t sclk_pin) {
   ce_pin_ = ce_pin;
