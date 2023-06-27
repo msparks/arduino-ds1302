@@ -104,7 +104,7 @@ Time::Time(uint32_t t) {
   hr = t % 24;
   uint16_t days = t / 24;
   uint8_t leap;
-  for (yr = 0;; ++yr) {
+  for (yr = 2000;; ++yr) {
     leap = yr % 4 == 0;
     if (days < 365U + leap)
       break;
