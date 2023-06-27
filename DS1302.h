@@ -9,6 +9,9 @@
 
 #include <stdint.h>
 
+// Unixtime for 2000-01-01 00:00:00, useful for initialization
+const uint32_t SECONDS_FROM_1970_TO_2000 = 946684800;
+
 // Class representing a particular time and date.
 class Time {
  public:
@@ -35,6 +38,7 @@ class Time {
   Time(uint16_t yr, uint8_t mon, uint8_t date,
        uint8_t hr, uint8_t min, uint8_t sec,
        Day day);
+  Time(uint32_t t = SECONDS_FROM_1970_TO_2000);
 
   uint8_t sec;
   uint8_t min;
@@ -43,6 +47,8 @@ class Time {
   uint8_t mon;
   Day day;
   uint16_t yr;
+  uint32_t unixtime(void) const;
+  int32_t operator-(const Time &other);
 };
 
 // An interface to the Dallas Semiconductor DS1302 Real Time Clock (RTC) chip.
